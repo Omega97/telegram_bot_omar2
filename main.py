@@ -18,21 +18,20 @@ Press Ctrl-C on the command line or send a signal to the process to stop the
 bot.
 """
 import logging
+import telegram
 from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters
 from my_token import TOKEN
-from my_handlers import start, help_command, babbo_natale_segreto, get_users
+from my_handlers import start, help_command, babbo_natale_segreto, get_users, burp, random_user
 from my_reply import reply
-from architect import Architect
 
 
-architect = Architect()
+assert telegram.__version__ == "21.1.1", "This bot works only with version 21.1.1 of the python-telegram-bot library"
 
 
 # Enable logging
-logging.basicConfig(
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
-)
+logging.basicConfig(format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+                    level=logging.INFO)
 # set higher logging level for httpx to avoid all GET and POST requests being logged
 logging.getLogger("httpx").setLevel(logging.WARNING)
 
@@ -49,7 +48,8 @@ def main():
     application.add_handler(CommandHandler("help", help_command))
     application.add_handler(CommandHandler("babbo_natale_segreto", babbo_natale_segreto))
     application.add_handler(CommandHandler("users", get_users))
-
+    application.add_handler(CommandHandler("burp", burp))
+    application.add_handler(CommandHandler("random_user", random_user))
 
     # on non command i.e. message - reply to the message on Telegram
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, reply))

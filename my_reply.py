@@ -1,17 +1,16 @@
 from telegram import Update
 from telegram.ext import ContextTypes
+from misc import show_interaction, random_catch_phrase
 
 
-def show_interaction(update, reply):
-    username = update.effective_user.username
-    user_message = update.message.text
-    print(f"{username}: {user_message}")
-    print(f">>> {reply}")
+def reply_bot(user, text):
+    return random_catch_phrase(user, text)
 
 
 async def reply(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """reply to the user message."""
     # write the username and the message in the log
-    text = update.message.text + '?'
+    user = update.effective_user
+    text = reply_bot(user, update.message.text)
     show_interaction(update, text)
     await update.message.reply_text(text)
