@@ -1,0 +1,5 @@
+156267213 {'username': 'Omar Cusma Fait', 'emoji': '🟦', 'achievements': {}}
+473531951 {'username': 'Peter Cej', 'emoji': '🟩', 'achievements': {}}
+890008145 {'username': 'Christopher', 'emoji': '🟨', 'achievements': {}}
+813074514 {'username': 'Vittorio', 'emoji': '🟥', 'achievements': {}}
+213607266 {'username': 'Nicolò Rossi', 'emoji': '🦊', 'achievements': {}}

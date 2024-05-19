@@ -22,8 +22,9 @@ import telegram
 from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters
 from my_token import TOKEN
-from my_handlers import start, help_command, babbo_natale_segreto, get_users, burp, random_user
+from my_handlers import *
 from my_reply import reply
+from my_handlers import COMMANDS
 
 
 assert telegram.__version__ == "21.1.1", "This bot works only with version 21.1.1 of the python-telegram-bot library"
@@ -44,12 +45,8 @@ def main():
     application = Application.builder().token(TOKEN).build()
 
     # on different commands - answer in Telegram
-    application.add_handler(CommandHandler("start", start))
-    application.add_handler(CommandHandler("help", help_command))
-    application.add_handler(CommandHandler("babbo_natale_segreto", babbo_natale_segreto))
-    application.add_handler(CommandHandler("users", get_users))
-    application.add_handler(CommandHandler("burp", burp))
-    application.add_handler(CommandHandler("random_user", random_user))
+    for command in COMMANDS:
+        application.add_handler(CommandHandler(command, COMMANDS[command]))
 
     # on non command i.e. message - reply to the message on Telegram
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, reply))
