@@ -1,16 +1,20 @@
 import numpy as np
 import pickle
+from architect import Architect
+# todo count the number of tiles in the canvas
 
 
 class Place:
-    def __init__(self, rows=20, cols=28, minutes_cooldown=2,
+    def __init__(self, rows=14, cols=20, minutes_cooldown=2,
                  path="data/place.pkl"):
         self.rows = rows
         self.cols = cols
         self.minutes_cooldown = minutes_cooldown
         self.path = path
         self.default_char = "➕"
-        self.grid = None
+        self.digits = ["0️⃣", "1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣"]
+        self.origin_character = "🛜"
+        self.grid = None  # contains the player ids
         self.load_grid()
 
     def reset_grid(self):
@@ -31,23 +35,30 @@ class Place:
         with open(self.path, "wb") as f:
             pickle.dump(self.grid.tolist(), f)
 
-    def swap_pixel(self, x, y, char_id):
-        """Swap the pixel at the given coordinates"""
+    def swap_pixel(self, x, y, user_id):
+        """Swap the tile at the given coordinates"""
         x = np.clip(x, -self.rows, self.rows - 1)
         y = np.clip(y, -self.cols, self.cols - 1)
-        if self.grid[x][y] == 0:
-            self.grid[x][y] = char_id
-        else:
+        if self.grid[x][y] == user_id:
             self.grid[x][y] = 0
+        else:
+            self.grid[x][y] = user_id
         self.save_grid()
 
     def __repr__(self):
+        """Return a string representation of the grid"""
+        architect = Architect()
         out = ""
         for j in reversed(range(self.cols)):
+            out += self.digits[j % 10]
             for i in range(self.rows):
                 if self.grid[i][j] == 0:
                     out += self.default_char
                 else:
-                    out += chr(self.grid[i][j])
+                    user_id = self.grid[i][j]
+                    out += architect.get_user_emoji(user_id)
             out += "\n"
+        out += self.origin_character
+        for i in range(self.rows):
+            out += self.digits[i % 10]
         return out

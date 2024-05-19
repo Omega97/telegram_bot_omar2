@@ -1,26 +1,45 @@
+"""
+This is the Architect class. It is used to manage the users.
+"""
 import os
 import pickle
+import numpy as np
 
 
 class Architect:
     """Class to manage the users"""
+
     def __init__(self):
         self.data_dir = "data"
         self.user_file = "data/user.pkl"
         self.user_info = None
+        self.default_emoji = ["⬜️", "🟥", "🟧", "🟨", "🟩", "🟦", "🟪",
+                              "⚪", "🔴", "🟠", "🟡", "🟢", "🔵", "🟣"]
         self._build_env()
         self._load_user_info()
 
-    def __getitem__(self, item):
-        return self.user_info[item]
+    def get_item(self, user_id, item, default):
+        """Get a key-value pair for a user"""
+        return self.user_info[user_id].get(item, default)
+
+    def set_item(self, user_id, key, value):
+        """Set a key-value pair for a user"""
+        self.user_info[user_id][key] = value
+        print(f"Setting {key} to {value} for user {user_id}")
+        self.save_user_info()
+
+    def get_random_emoji(self):
+        """Return a random emoji from the default_emoji list"""
+        i = np.random.randint(len(self.default_emoji))
+        return self.default_emoji[i]
 
     def _load_user_info(self):
-        """Load the users from the user.pkl file."""
+        """Load the users from the user.pkl file"""
         with open(self.user_file, "rb") as f:
             self.user_info = pickle.load(f)
 
     def save_user_info(self):
-        """Save the users to the user.pkl file."""
+        """Save the users to the user.pkl file"""
         if self.user_info is not None:
             with open(self.user_file, "wb") as f:
                 pickle.dump(self.user_info, f)
@@ -36,11 +55,11 @@ class Architect:
             self.save_user_info()
 
     def get_user_info(self) -> dict:
-        """Return the users from the user.pkl file."""
+        """Return the users from the user.pkl file"""
         return self.user_info
 
     def add_user(self, user_id, user_name):
-        """Add a user to the user.pkl file."""
+        """Add a user to the user.pkl file"""
         if user_name is None:
             print('User name is None')
             return
@@ -53,35 +72,100 @@ class Architect:
         # create new user if not exists
         if user_id not in self.user_info:
             # default user info
-            self.user_info[user_id] = {"username": user_name,
-                                       "emoji": "👤",
-                                       "achievements": dict()}
+            self.user_info[user_id] = dict()
+            self.set_item(user_id, "username", user_name)
+            self.set_item(user_id, "emoji", self.get_random_emoji())
+            self.set_item(user_id, "achievements", dict())
             self.save_user_info()
 
+    def get_user_name(self, user_id):
+        """Get the name of a user"""
+        return self.get_item(user_id, "username", "None")
+
+    def get_user_emoji(self, user_id):
+        """Get the emoji for a use"""
+        return self.user_info[user_id].get("emoji", self.get_random_emoji())
+
     def del_user(self, user_id):
-        """Delete a user from the user.pkl file."""
+        """Delete a user from the user.pkl file"""
         del self.user_info[user_id]
         self.save_user_info()
 
     def get_user_names(self) -> list:
-        """Return the usernames from the user.pkl file."""
+        """Return the usernames from the user.pkl file"""
         return [user["username"] for user in self.user_info.values()]
 
     def set_emoji(self, user_id, emoji):
-        """Set the emoji for a user."""
-        self.user_info[user_id]["emoji"] = emoji
+        """Set the emoji for a user"""
+        self.set_item(user_id, "emoji", emoji)
         self.save_user_info()
-
-    def get_user_emoji(self, user_id):
-        """Get the emoji for a user"""
-        print(self.user_info[user_id])
-        return self.user_info[user_id]["emoji"]
 
     def get_last_place_time(self, user_id):
-        """Get the last time the place was used."""
-        return self.user_info[user_id].get("last_place_time", None)
+        """Get the last time the place was used"""
+        return self.get_item(user_id, "last_place_time", None)
 
     def set_last_place_time(self, user_id, time):
-        """Set the last time the place was used."""
-        self.user_info[user_id]["last_place_time"] = time
+        """Set the last time the place was used"""
+        self.set_item(user_id, "last_place_time", time)
         self.save_user_info()
+
+    def get_place_tiles_count(self, user_id) -> int:
+        """Get the number of tiles placed by a user"""
+        return self.user_info[user_id].get("tiles_count", 0)
+
+    def add_place_tiles_count(self, user_id, count=1):
+        """Add the number of tiles placed by a user"""
+        n = self.get_place_tiles_count(user_id) + count
+        self.set_item(user_id, "tiles_count", n)
+        self.save_user_info()
+
+    def set_admin(self, user_id, admin=True):
+        """Set the admin flag for a user"""
+        self.set_item(user_id, "admin", admin)
+        self.save_user_info()
+
+    def set_santa(self, user_id, santa=True):
+        """Set the santa flag for a user"""
+        self.set_item(user_id, "santa", santa)
+        self.save_user_info()
+
+    def get_santas(self) -> tuple:
+        """Return the users who are Santas"""
+        return tuple([user_id for user_id in self.user_info if self.get_item(user_id, "santa", False)])
+
+    def get_points(self, user_id):
+        """Get the number of points for a user"""
+        return self.get_item(user_id, "points", 0)
+
+    def increase_points(self, user_id, points):
+        """Increase the number of points for a user"""
+        assert points > 0, "Points must be greater than zero"
+        n = self.get_points(user_id) + points
+        self.set_item(user_id, "points", n)
+        self.save_user_info()
+
+    def get_tile_leaderboard(self):
+        """Return the leaderboard for the number of tiles placed by each user"""
+        v = []
+        for user_id in self.user_info:
+            n_tiles = self.get_place_tiles_count(user_id)
+            if n_tiles:
+                emoji = self.get_user_emoji(user_id)
+                name = self.get_user_name(user_id)
+                v.append((name, emoji, n_tiles))
+        v.sort(key=lambda x: x[2], reverse=True)
+        names, emojis, tiles = zip(*v)
+        return names, emojis, tiles
+
+    def get_leaderboard(self):
+        """Return the leaderboard for the number of points for all users"""
+        v = []
+        for user_id in self.user_info:
+            points = self.get_points(user_id)
+            if points:
+                emoji = self.get_user_emoji(user_id)
+                name = self.get_user_name(user_id)
+                v.append((name, emoji, points))
+        v.sort(key=lambda x: x[2], reverse=True)
+        names, emojis, points = zip(*v)
+        return names, emojis, points

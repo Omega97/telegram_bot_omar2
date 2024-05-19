@@ -8,6 +8,14 @@ def get_user_full_name(user):
     return f"{user.first_name} {user.last_name}" if user.last_name else user.first_name
 
 
+def get_message_text(update):
+    """Return the text of the message"""
+    out = 'None'
+    if hasattr(update.message, 'text'):
+        out = str(update.message.text)
+    return out
+
+
 def get_user_id(update):
     """Return the id of the user who sent the message"""
     return update.effective_user.id
@@ -15,7 +23,7 @@ def get_user_id(update):
 
 def show_interaction(update: Update, reply_text: str):
     username = get_user_full_name(update.effective_user)
-    user_message = update.message.text if update.message.text else 'None'
+    user_message = get_message_text(update)
     print(f"\n{username}: {user_message}")
     print(f">>> {reply_text}")
 

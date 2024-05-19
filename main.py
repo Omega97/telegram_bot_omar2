@@ -19,7 +19,6 @@ bot.
 """
 import logging
 import telegram
-from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters
 from my_token import TOKEN
 from my_handlers import *

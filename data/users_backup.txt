@@ -1,5 +1,1 @@
-156267213 {'username': 'Omar Cusma Fait', 'emoji': '🟦', 'achievements': {}}
-473531951 {'username': 'Peter Cej', 'emoji': '🟩', 'achievements': {}}
-890008145 {'username': 'Christopher', 'emoji': '🟨', 'achievements': {}}
-813074514 {'username': 'Vittorio', 'emoji': '🟥', 'achievements': {}}
-213607266 {'username': 'Nicolò Rossi', 'emoji': '🦊', 'achievements': {}}
+{156267213: {'username': 'Omar Cusma Fait', 'emoji': '🟦', 'achievements': {}, 'last_place_time': 1716116565.430658, 'tiles_count': 2}, 473531951: {'username': 'Peter Cej', 'emoji': '🟩', 'achievements': {}}, 890008145: {'username': 'Christopher', 'emoji': '🟨', 'achievements': {}}, 813074514: {'username': 'Vittorio', 'emoji': '🟥', 'achievements': {}}, 213607266: {'username': 'Nicolò Rossi', 'emoji': '🦊', 'achievements': {}}, 197127934: {'username': 'Kleit Rrokja', 'emoji': '🐧', 'achievements': {}}}
