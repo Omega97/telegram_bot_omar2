@@ -24,6 +24,7 @@ from my_token import TOKEN
 from my_handlers import *
 from my_reply import reply
 from my_handlers import COMMANDS
+# todo admin set commands
 
 
 assert telegram.__version__ == "21.1.1", "This bot works only with version 21.1.1 of the python-telegram-bot library"
@@ -40,6 +41,7 @@ logger = logging.getLogger(__name__)
 
 def main():
     """Start the bot."""
+
     # Create the Application and pass it your bot's token.
     application = Application.builder().token(TOKEN).build()
 

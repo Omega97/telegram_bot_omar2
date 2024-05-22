@@ -1,5 +1,5 @@
 import numpy as np
-from time import gmtime, strftime
+from time import time, gmtime, strftime
 from telegram import Update
 
 
@@ -24,7 +24,8 @@ def get_user_id(update):
 def show_interaction(update: Update, reply_text: str):
     username = get_user_full_name(update.effective_user)
     user_message = get_message_text(update)
-    print(f"\n{username}: {user_message}")
+    t_string = strftime("%H:%M:%S", gmtime(time()))
+    print(f"\n[{t_string}] {username}: {user_message}")
     print(f">>> {reply_text}")
 
 

@@ -12,6 +12,7 @@ class Architect:
     def __init__(self):
         self.data_dir = "data"
         self.user_file = "data/user.pkl"
+        self.user_message_path = "data/user_message.pkl"
         self.user_info = None
         self.default_emoji = ["⬜️", "🟥", "🟧", "🟨", "🟩", "🟦", "🟪",
                               "⚪", "🔴", "🟠", "🟡", "🟢", "🔵", "🟣"]
@@ -25,7 +26,11 @@ class Architect:
     def set_item(self, user_id, key, value):
         """Set a key-value pair for a user"""
         self.user_info[user_id][key] = value
-        print(f"Setting {key} to {value} for user {user_id}")
+        self.save_user_info()
+
+    def del_item(self, user_id, key):
+        """Delete a key-value pair for a user"""
+        del self.user_info[user_id][key]
         self.save_user_info()
 
     def get_random_emoji(self):
@@ -130,7 +135,7 @@ class Architect:
         self.save_user_info()
 
     def get_santas(self) -> tuple:
-        """Return the users who are Santas"""
+        """Return the user ids of the Santas"""
         return tuple([user_id for user_id in self.user_info if self.get_item(user_id, "santa", False)])
 
     def get_points(self, user_id):
@@ -169,3 +174,29 @@ class Architect:
         v.sort(key=lambda x: x[2], reverse=True)
         names, emojis, points = zip(*v)
         return names, emojis, points
+
+    def get_admins(self) -> tuple:
+        """get a tuple of all the admin ids"""
+        return tuple([user_id for user_id in self.user_info if self.get_item(user_id, "admin", False)])
+
+    def set_last_user_message(self, user_id, message):
+        """Set the last user message"""
+        with open(self.user_message_path, "wb") as f:
+            pickle.dump((user_id, message), f)
+
+    def get_last_user_message(self) -> tuple:
+        """Get the last user message"""
+        if os.path.exists(self.user_message_path):
+            with open(self.user_message_path, "rb") as f:
+                return pickle.load(f)
+        else:
+            return None, None
+
+    def get_canvas(self, user_id):
+        """Get the canvas for a user"""
+        return self.get_item(user_id, "canvas", "default")
+
+    def set_canvas(self, user_id, canvas):
+        """Set the canvas for a user"""
+        self.set_item(user_id, "canvas", canvas)
+        self.save_user_info()
