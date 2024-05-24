@@ -9,7 +9,7 @@ import numpy as np
 from architect import Architect
 from my_reply import show_interaction
 from place import Place
-from misc import get_user_full_name, babbo_natale
+from misc import get_user_full_name, babbo_natale, get_user_id
 
 
 COMMANDS = dict()
@@ -17,7 +17,7 @@ ADMIN_COMMNADS = dict()
 PLACING_TILE_POINTS = 1
 
 
-async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+async def start_command(update: Update, _):
     """Send a message when the command /start is issued."""
     user = update.effective_user
     usern_full_name = get_user_full_name(user)
@@ -32,29 +32,36 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
     await update.message.reply_html(text, reply_markup=ForceReply(selective=True))
 
 
-async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+async def help_command(update: Update, _):
     """Send a message when the command /help is issued."""
-    text = ("Commands: " + ", ".join(["/" + key for key in COMMANDS]) + "\n")
+    # list of commands
+    text = ("🖥 Commands: " + ", ".join(["/" + key for key in COMMANDS]) + "\n")
+
+    # list of admin-only commands
+    admin_ids = Architect().get_admin_ids()
+    if get_user_id(update) in admin_ids:
+        text += "✨ Admin commands: " + ", ".join(["/" + key for key in ADMIN_COMMNADS]) + "\n"
+
     show_interaction(update, text)
     await update.message.reply_text(text)
 
 
-async def babbo_natale_segreto_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+async def babbo_natale_segreto_command(update: Update, _):
     """Send a message when the command /babbo_natale_segreto is issued."""
     architect = Architect()
-    user_ids = architect.get_santas()
-    user_names = [architect.get_user_name(user_id) for user_id in user_ids]
-
+    santas = architect.get_santas()
+    user_names = [architect.get_user_name(user_id) for user_id in santas]
     this_user = get_user_full_name(update.effective_user)
+    this_user_id = get_user_id(update)
 
-    if this_user in user_names:
-        text = "🎄🎄🎄☃❄ Babbo Natale Segreto! 🎅🎁🎄🎄🎄\n\n"
-        text += f"Utenti registrati: {len(user_names)} (Assicurati che ci siate tutti!!!)\n"
+    if this_user_id in santas:
+        text = "🎄☃❄ Babbo Natale Segreto! 🎅🎁🎄\n\n"
+        text += f"👥 Utenti registrati: {len(user_names)} (Assicurati che ci siate tutti!!!)\n"
         for name in user_names:
             text += f'- {name}\n'
         text += '\n'
         year = strftime("%Y", gmtime())
-        text += f'Il tuo Babbo Natale segreto {year} è ➡{babbo_natale(user_names)[this_user]}⬅ !'
+        text += f'Il tuo Babbo Natale segreto {year} è:\n➡{babbo_natale(user_names)[this_user]}⬅ !'
         show_interaction(update, text)
         await update.message.reply_text(text)
     else:
@@ -63,24 +70,24 @@ async def babbo_natale_segreto_command(update: Update, context: ContextTypes.DEF
         await update.message.reply_text(text)
 
 
-async def get_users_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+async def get_users_command(update: Update, _):
     """Send a message when the command /users is issued."""
     architect = Architect()
     users = [f'{architect.get_user_emoji(i)} {architect.get_user_name(i)}' for i in architect.user_info]
-    text = "👥 Utenti registrati: "
-    text += ', '.join(users)
+    text = "---👥 Utenti registrati 👥---\n"
+    text += '\n'.join(users)
     show_interaction(update, text)
     await update.message.reply_text(text)
 
 
-async def burp_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+async def burp_command(update: Update, _):
     """Send a message when the command /burp is issued."""
     text = "Ma Omar!"
     show_interaction(update, text)
     await update.message.reply_text(text)
 
 
-async def random_user_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+async def random_user_command(update: Update, _):
     """Send a message when the command /random_user is issued."""
     architect = Architect()
     user_info = architect.get_user_info()
@@ -92,12 +99,12 @@ async def random_user_command(update: Update, context: ContextTypes.DEFAULT_TYPE
     await update.message.reply_text(text)
 
 
-async def place_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+async def place_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Send a message when the command /place is issued."""
     architect = Architect()
     user_id = update.effective_user.id
-    canvas = architect.get_canvas(user_id)
-    place = Place(canvas=canvas)
+    canvas_name = architect.get_canvas_name(user_id)
+    place = Place(canvas_name=canvas_name)
     args = context.args
     text = '--- Telegram Place ---\n'
     now = time()
@@ -138,7 +145,6 @@ async def place_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
     elif len(args) == 1:
         if args[0] == 'stats':
             # show stats
-
             architect = Architect()
             names, emojis, tiles = architect.get_tile_leaderboard()
 
@@ -156,8 +162,7 @@ async def place_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
             names = [architect.get_user_name(i) for i in ids]
             text = f"---🏆 Tiles on the Canvas 🏆 ---\n"
             for i in range(len(ids)):
-                s = '' if count[ids[i]] == 1 else 's'
-                text += f'{emojis[i]} {names[i]}: {count[ids[i]]} tile{s}\n'
+                text += f'{count[ids[i]]} {emojis[i]} {names[i]}\n'
             show_interaction(update, text)
             await update.message.reply_text(text)
     else:
@@ -171,24 +176,142 @@ async def place_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
         await update.message.reply_text(text)
 
 
-async def leaderboard_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+async def leaderboard_command(update: Update, _):
     """Send a message when the command /leaderboard is issued."""
     architect = Architect()
-    names, emojis, tiles = architect.get_tile_leaderboard()
-    text = "---🏆 Leaderboard 🏆 ---\n"
+    names, emojis, points = architect.get_tile_leaderboard()
+    text = "---🏆 Leaderboard 🏆---\n"
+    text += 'Punti di ciascun utente:\n'
     for i in range(len(names)):
-        s = '' if tiles[i] == 1 else 's'
-        text += f'{emojis[i]} {names[i]}: {tiles[i]} point{s}\n'
+        text += f'{points[i]} {emojis[i]} {names[i]} \n'
     show_interaction(update, text)
     await update.message.reply_text(text)
 
-# async def admin_get_user_ids(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-#     """Send a message when the command /admin_get_user_ids is issued."""
-#     architect = Architect()
-#     user_ids = architect.get_user_info()
-#     text = f"User ids: {user_ids}"
-#     show_interaction(update, text)
-#     await update.message.reply_text(text)
+
+def check_admin_wrapper(func):
+    async def wrapper(update: Update, context: ContextTypes.DEFAULT_TYPE):
+        user_id = get_user_id(update)
+        architect = Architect()
+        if architect.is_admin(user_id):
+            await func(update, context)
+        else:
+            text = "Non sei un admin!"
+            show_interaction(update, text)
+            await update.message.reply_text(text)
+
+    return wrapper
+
+
+@check_admin_wrapper
+async def admin_get_user_ids_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Get list of ids and usernames """
+    args = context.args
+    architect = Architect()
+
+    if len(args) == 0:
+        user_ids = architect.get_user_ids()
+    else:
+        user_ids = architect.smart_id_search(args[0])
+
+    text = f"👥 {len(user_ids)} users:"
+    for user_id in sorted(user_ids):
+        text += f"\n{user_id} {architect.get_user_name(user_id)}"
+    show_interaction(update, text)
+    await update.message.reply_text(text)
+
+
+@check_admin_wrapper
+async def admin_set_emoji_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Set user's emoji"""
+    architect = Architect()
+    args = context.args
+    if len(args) == 2:
+        user_id = int(args[0])
+        if user_id not in architect.get_user_ids():
+            text = f"User {user_id} not found"
+        else:
+            emoji = args[1]
+            architect.set_user_emoji(user_id, emoji)
+            text = f"Set emoji {emoji} for user {user_id}"
+    else:
+        text = "Usage: /set_emoji [user_id] [emoji]"
+    show_interaction(update, text)
+    await update.message.reply_text(text)
+
+
+@check_admin_wrapper
+async def admin_canvas_names_command(update: Update, _):
+    """Get list of canvas names"""
+    architect = Architect()
+    canvas_names = architect.get_canvas_names()
+    text = f"🎨 {len(canvas_names)} canvases:"
+    for canvas_name in canvas_names:
+        text += f"\n- {canvas_name}"
+    show_interaction(update, text)
+    await update.message.reply_text(text)
+
+
+@check_admin_wrapper
+async def admin_set_canvas_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Set user's canvas"""
+    architect = Architect()
+    args = context.args
+    if len(args) == 2:
+        user_id = int(args[0])
+        if user_id not in architect.get_user_ids():
+            text = f"User {user_id} not found"
+        else:
+            canvas = f'{args[1].lower()}.csv'
+
+            if canvas in architect.get_canvas_names():
+                architect.set_canvas(user_id, canvas)
+                text = f'🎨 Canvas "{canvas}" set for user {user_id}'
+            else:
+                text = f'Canvas "{canvas}" not found!'
+    else:
+        text = "Usage: /set_canvas [user_id] [canvas]"
+    show_interaction(update, text)
+    await update.message.reply_text(text)
+
+
+@ check_admin_wrapper
+async def admin_get_info_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Get user's info"""
+    architect = Architect()
+    args = context.args
+    if len(args) == 1:
+        user_id = int(args[0])
+        if user_id not in architect.get_user_ids():
+            text = f"User {user_id} not found"
+        else:
+            text = f"Info for user {user_id}:\n"
+            text += f"Name: {architect.get_user_name(user_id)}\n"
+            text += f"Emoji: {architect.get_user_emoji(user_id)}\n"
+            text += f"Canvas: {architect.get_canvas_name(user_id)}\n"
+            text += f"Admin: {architect.get_item(user_id, 'admin', False)}"
+    else:
+        text = "Usage: /get_info [user_id]"
+    show_interaction(update, text)
+    await update.message.reply_text(text)
+
+
+@check_admin_wrapper
+async def admin_set_santa_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Set user's santa"""
+    architect = Architect()
+    args = context.args
+    if len(args) == 2:
+        user_id = int(args[0])
+        if user_id not in architect.get_user_ids():
+            text = f"User {user_id} not found"
+        else:
+            santa = args[1].lower().startswith('t')
+            architect.set_santa(user_id, santa)
+            text = f'🎅 Santa set to "{santa}" for user {user_id}'
+    else:
+        text = "Usage: /set_santa [user_id] [santa]"
+    show_interaction(update, text)
+    await update.message.reply_text(text)
 
 
 # command handlers (without slash, need to be here)
@@ -199,3 +322,11 @@ COMMANDS["random_user"] = random_user_command
 COMMANDS["place"] = place_command
 COMMANDS["babbo_natale_segreto"] = babbo_natale_segreto_command
 COMMANDS["leaderboard"] = leaderboard_command
+
+# admin commands
+ADMIN_COMMNADS["get_ids"] = admin_get_user_ids_command
+ADMIN_COMMNADS["set_emoji"] = admin_set_emoji_command
+ADMIN_COMMNADS["canvas_names"] = admin_canvas_names_command
+ADMIN_COMMNADS["set_canvas"] = admin_set_canvas_command
+ADMIN_COMMNADS["get_info"] = admin_get_info_command
+ADMIN_COMMNADS["set_santa"] = admin_set_santa_command

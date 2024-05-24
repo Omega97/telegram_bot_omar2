@@ -1,8 +1,8 @@
-import pickle
 from architect import Architect
+from place import Place
 
 
-def test_architecture():
+def test_show_user_info():
     architect = Architect()
     user_info = architect.get_user_info()
 
@@ -36,14 +36,23 @@ def test_architecture():
     architect.save_user_info()
 
 
-def test_place():
-    path = 'data/place.pkl'
-    with open(path, 'rb') as f:
-        grid = pickle.load(f)
-    with open(path, 'wb') as f:
-        pickle.dump(grid, f)
+def test_architect():
+    architect = Architect()
+    for user_id in architect.user_info:
+        print()
+        print(user_id)
+        for key, value in architect.user_info[user_id].items():
+            # print key, value, type in gray color
+            print(f'{key}: {value} \033[90m{type(value)}\033[0m')
+    architect.save_user_info()
+
+
+def test_mini_canvas():
+    place = Place('maxi', shape=(16, 40))
+    print(place)
 
 
 if __name__ == '__main__':
-    test_architecture()
-    # test_place()
+    test_show_user_info()
+    # test_architect()
+    # test_mini_canvas()

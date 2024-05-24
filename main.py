@@ -23,8 +23,14 @@ from telegram.ext import Application, CommandHandler, MessageHandler, filters
 from my_token import TOKEN
 from my_handlers import *
 from my_reply import reply
-from my_handlers import COMMANDS
-# todo admin set commands
+from my_handlers import COMMANDS, ADMIN_COMMNADS
+# todo check string conversion to int
+# todo check for canvas name il existing canvases
+# todo save ALL messages
+# todo class for handlers?
+# todo canvas of given size
+# todo blocked users
+# todo admin set admin
 
 
 assert telegram.__version__ == "21.1.1", "This bot works only with version 21.1.1 of the python-telegram-bot library"
@@ -48,6 +54,8 @@ def main():
     # on different commands - answer in Telegram
     for command in COMMANDS:
         application.add_handler(CommandHandler(command, COMMANDS[command]))
+    for command in ADMIN_COMMNADS:
+        application.add_handler(CommandHandler(command, ADMIN_COMMNADS[command]))
 
     # on non command i.e. message - reply to the message on Telegram
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, reply))

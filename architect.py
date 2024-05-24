@@ -2,22 +2,35 @@
 This is the Architect class. It is used to manage the users.
 """
 import os
-import pickle
 import numpy as np
+from misc import DEFAULT_EMOJI, read_user_csv_file, write_user_csv_file
 
 
 class Architect:
     """Class to manage the users"""
 
-    def __init__(self):
-        self.data_dir = "data"
-        self.user_file = "data/user.pkl"
-        self.user_message_path = "data/user_message.pkl"
-        self.user_info = None
-        self.default_emoji = ["⬜️", "🟥", "🟧", "🟨", "🟩", "🟦", "🟪",
-                              "⚪", "🔴", "🟠", "🟡", "🟢", "🔵", "🟣"]
+    def __init__(self, data_dir="data"):
+        # directories
+        self.data_dir = data_dir
+        self.canvases_dir = data_dir + "/canvases"
+        self.users_dir = data_dir + "/users"
+        self.directories = (self.data_dir, self.canvases_dir, self.users_dir)
+
+        # file paths
+        # self.user_file = self.data_dir + "/user.pkl"
+        self.user_message_path = self.data_dir + "/user_messages.txt"
+
+        # attributes
+        self.user_info = dict()
+        self.default_emoji = DEFAULT_EMOJI
+
+        # build environment
         self._build_env()
         self._load_user_info()
+
+    def get_user_ids(self) -> tuple:
+        """get tuple of all user ids"""
+        return tuple(self.user_info.keys())
 
     def get_item(self, user_id, item, default):
         """Get a key-value pair for a user"""
@@ -40,24 +53,21 @@ class Architect:
 
     def _load_user_info(self):
         """Load the users from the user.pkl file"""
-        with open(self.user_file, "rb") as f:
-            self.user_info = pickle.load(f)
+        for file_name in os.listdir(self.users_dir):
+            if file_name.endswith('.csv'):
+                user_id = int(file_name.split('.')[0])
+                self.user_info[user_id] = read_user_csv_file(self.users_dir + '/' + file_name)
 
     def save_user_info(self):
         """Save the users to the user.pkl file"""
-        if self.user_info is not None:
-            with open(self.user_file, "wb") as f:
-                pickle.dump(self.user_info, f)
+        for user_id in self.user_info:
+            write_user_csv_file(self.users_dir + '/' + str(user_id) + '.csv', self.user_info[user_id])
 
     def _build_env(self):
-        # create data directory
-        if not os.path.exists(self.data_dir):
-            os.makedirs(self.data_dir)
-
-        # create user.pkl file if not exists
-        if not os.path.exists(self.user_file):
-            self.user_info = dict()
-            self.save_user_info()
+        # create directories
+        for path in self.directories:
+            if not os.path.exists(path):
+                os.makedirs(path)
 
     def get_user_info(self) -> dict:
         """Return the users from the user.pkl file"""
@@ -71,7 +81,6 @@ class Architect:
         if user_id in self.user_info:
             print(f"\n>>>User {user_id} {user_name} already exists")
             return
-
         print(f"\n>>>Adding user {user_id} {user_name}")
 
         # create new user if not exists
@@ -82,8 +91,10 @@ class Architect:
             self.set_item(user_id, "emoji", self.get_random_emoji())
             self.set_item(user_id, "achievements", dict())
             self.save_user_info()
+        else:
+            print(f"User {user_name} ({user_id}) already exists")
 
-    def get_user_name(self, user_id):
+    def get_user_name(self, user_id) -> str:
         """Get the name of a user"""
         return self.get_item(user_id, "username", "None")
 
@@ -136,7 +147,8 @@ class Architect:
 
     def get_santas(self) -> tuple:
         """Return the user ids of the Santas"""
-        return tuple([user_id for user_id in self.user_info if self.get_item(user_id, "santa", False)])
+        v = [user_id for user_id in self.user_info if self.get_item(user_id, "santa", False)]
+        return tuple(v)
 
     def get_points(self, user_id):
         """Get the number of points for a user"""
@@ -179,24 +191,53 @@ class Architect:
         """get a tuple of all the admin ids"""
         return tuple([user_id for user_id in self.user_info if self.get_item(user_id, "admin", False)])
 
-    def set_last_user_message(self, user_id, message):
-        """Set the last user message"""
-        with open(self.user_message_path, "wb") as f:
-            pickle.dump((user_id, message), f)
-
-    def get_last_user_message(self) -> tuple:
+    def get_user_messages(self) -> list:
         """Get the last user message"""
         if os.path.exists(self.user_message_path):
-            with open(self.user_message_path, "rb") as f:
-                return pickle.load(f)
+            with open(self.user_message_path, "r") as f:
+                return f.read().splitlines()
         else:
-            return None, None
+            return []
 
-    def get_canvas(self, user_id):
+    def save_user_message(self, message):
+        """Set the last user message"""
+        if os.path.exists(self.user_message_path):
+            with open(self.user_message_path, "a") as f:
+                f.write(message + "\n")
+        else:
+            with open(self.user_message_path, "w") as f:
+                f.write(message + "\n")
+
+    def get_canvas_name(self, user_id):
         """Get the canvas for a user"""
         return self.get_item(user_id, "canvas", "default")
 
-    def set_canvas(self, user_id, canvas):
+    def set_canvas(self, user_id, canvas: str):
         """Set the canvas for a user"""
         self.set_item(user_id, "canvas", canvas)
         self.save_user_info()
+
+    def is_admin(self, user_id):
+        """Return True if user is admin, else False """
+        return self.get_item(user_id, 'admin', False)
+
+    def get_admin_ids(self):
+        """Return a list of admin ids"""
+        return tuple([user_id for user_id in self.user_info if self.get_item(user_id, 'admin', False)])
+
+    def set_user_emoji(self, user_id, emoji):
+        """Set the emoji for a user"""
+        self.set_item(user_id, "emoji", emoji)
+
+    def smart_id_search(self, s: str) -> list:
+        """Find all the users that contain the string s in their name"""
+        s = s.lower()
+        user_ids = self.get_user_ids()
+        user_names = [self.get_user_name(user_id).lower() for user_id in user_ids]
+        return [user_id for user_id, user_name in zip(user_ids, user_names) if s in user_name]
+
+    def get_canvas_names(self):
+        """Return the names of all the canvas files"""
+        file_names = os.listdir(self.canvases_dir)
+        file_names = [canvas_name for canvas_name in file_names if canvas_name.endswith('.csv')]
+        return file_names
