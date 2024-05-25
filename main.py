@@ -24,6 +24,10 @@ from my_token import TOKEN
 from my_handlers import *
 from my_reply import reply
 from my_handlers import COMMANDS, ADMIN_COMMNADS
+
+import os
+from dotenv import load_dotenv
+
 # todo check string conversion to int
 # todo check for canvas name il existing canvases
 # todo save ALL messages
@@ -46,7 +50,7 @@ logger = logging.getLogger(__name__)
 
 
 def main():
-    """Start the bot."""
+    """Start the bot"""
 
     # Create the Application and pass it your bot's token.
     application = Application.builder().token(TOKEN).build()

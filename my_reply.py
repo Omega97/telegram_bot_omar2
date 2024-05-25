@@ -7,11 +7,11 @@ from architect import Architect
 def reply_bot(user, text: str, user_id) -> str:
     """reply with the last message written by another user"""
     architect = Architect()
-    old_id, old_message = architect.get_last_user_message()
-    architect.set_last_user_message(user_id, text)
-    if old_id != user_id and old_message is not None:
-        # send the old message
-        return old_message
+    user_messages = architect.get_user_messages()
+    if len(user_messages):
+        # return the last message
+        architect.save_user_message(text)
+        return user_messages[-1]
     else:
         # standard reply
         username = get_user_full_name(user)
