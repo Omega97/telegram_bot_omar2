@@ -10,6 +10,7 @@ from architect import Architect
 from my_reply import show_interaction
 from place import Place
 from misc import get_user_full_name, babbo_natale, get_user_id
+from pasgen_2024 import generate_password
 
 
 COMMANDS = dict()
@@ -106,7 +107,7 @@ async def place_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     canvas_name = architect.get_canvas_name(user_id)
     place = Place(canvas_name=canvas_name)
     args = context.args
-    text = '--- Telegram Place ---\n'
+    text = ''
     now = time()
 
     if len(args) >= 2:
@@ -139,9 +140,12 @@ async def place_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await update.message.reply_text(text)
         else:
             # wait
-            text += f'mancano ancora {time_to_wait+1:.0f} secondi...\n'
+            text += f'💤 mancano ancora {time_to_wait+1:.0f} secondi...\n'
             show_interaction(update, text)
-            await update.message.reply_text(text)
+            if update.message is not None:
+                await update.message.reply_text(text)
+            else:
+                await update.callback_query.answer(text)  # todo check
     elif len(args) == 1:
         if args[0] == 'stats':
             # show stats
@@ -314,6 +318,32 @@ async def admin_set_santa_command(update: Update, context: ContextTypes.DEFAULT_
     await update.message.reply_text(text)
 
 
+@check_admin_wrapper
+async def admin_password_command(update: Update, context: ContextTypes.DEFAULT_TYPE, default_length=16):
+    """Generate a password"""
+    args = context.args
+    key = ""
+    length = default_length
+    text = None
+
+    try:
+        key = args[0] if len(args) > 0 else ""
+        length = int(args[1]) if len(args) > 1 else default_length
+    except Exception:
+        text = f"Usage: /password [key] [length]"
+    else:
+        if text is None:
+            try:
+                username = get_user_full_name(update.effective_user)
+                password = generate_password(key, username, length)
+                text = f"{password}"
+            except Exception as _:
+                text = f"Usage: /password [key] [length]"
+
+    show_interaction(update, text)
+    await update.message.reply_text(text)
+
+
 # command handlers (without slash, need to be here)
 COMMANDS["start"] = start_command
 COMMANDS["help"] = help_command
@@ -330,3 +360,4 @@ ADMIN_COMMNADS["canvas_names"] = admin_canvas_names_command
 ADMIN_COMMNADS["set_canvas"] = admin_set_canvas_command
 ADMIN_COMMNADS["get_info"] = admin_get_info_command
 ADMIN_COMMNADS["set_santa"] = admin_set_santa_command
+ADMIN_COMMNADS["password"] = admin_password_command
