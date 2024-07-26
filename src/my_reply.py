@@ -2,7 +2,7 @@ from telegram import Update
 from telegram.ext import ContextTypes
 from random import shuffle
 from scripts.utils import show_interaction, get_message_text, get_user_full_name, moderate
-from architect import Architect
+from src.architect import Architect
 
 
 def reply_bot(user, text: str, user_id, n_lest_messages=100, n_write=3) -> str:

@@ -6,8 +6,8 @@ from telegram import ForceReply, Update
 from telegram.ext import ContextTypes
 from time import time, gmtime, strftime
 import numpy as np
-from architect import Architect
-from place import Place
+from src.architect import Architect
+from src.place import Place
 from scripts.pasgen_2024 import generate_password
 from scripts.utils import show_interaction
 from scripts.utils import get_user_full_name, babbo_natale, get_user_id
