@@ -1,7 +1,3 @@
-#!/usr/bin/env python
-# pylint: disable=unused-argument
-# This program is dedicated to the public domain under the CC0 license.
-
 """
 Telegram bot
 Telegram version 21.1.1
@@ -25,24 +21,20 @@ from my_handlers import *
 from my_reply import reply
 from my_handlers import COMMANDS, ADMIN_COMMNADS
 
-import os
-from dotenv import load_dotenv
-
 # todo check string conversion to int
 # todo check for canvas name il existing canvases
 # todo save ALL messages
-# todo class for handlers?
-# todo canvas of given size
 # todo blocked users
-# todo admin set admin
+# todo canvas of given size
+# todo class for handlers?
+# todo admin set admin?
 
 
 assert telegram.__version__ == "21.1.1", "This bot works only with version 21.1.1 of the python-telegram-bot library"
 
 
 # Enable logging
-logging.basicConfig(format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-                    level=logging.INFO)
+logging.basicConfig(format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO)
 # set higher logging level for httpx to avoid all GET and POST requests being logged
 logging.getLogger("httpx").setLevel(logging.WARNING)
 
