@@ -199,13 +199,13 @@ class Architect:
         else:
             return []
 
-    def save_user_message(self, message):
+    def save_user_message(self, message, encoding="utf-8"):
         """Set the last user message"""
         if os.path.exists(self.user_message_path):
-            with open(self.user_message_path, "a") as f:
+            with open(self.user_message_path, "a", encoding=encoding) as f:
                 f.write(message + "\n")
         else:
-            with open(self.user_message_path, "w") as f:
+            with open(self.user_message_path, "w", encoding=encoding) as f:
                 f.write(message + "\n")
 
     def get_canvas_name(self, user_id):
