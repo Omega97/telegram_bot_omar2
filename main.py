@@ -1,6 +1,6 @@
 """
 Telegram bot
-Telegram version 21.1.1
+telegram version 21.1.1
 
 Simple Bot to reply to Telegram messages.
 
@@ -12,14 +12,6 @@ Usage:
 Basic bot example, repeats messages.
 Press Ctrl-C on the command line or send a signal to the process to stop the
 bot.
-"""
-import logging
-import telegram
-from telegram.ext import Application, CommandHandler, MessageHandler, filters
-from my_token import TOKEN
-from my_handlers import *
-from my_reply import reply
-from my_handlers import COMMANDS, ADMIN_COMMNADS
 
 # todo check string conversion to int
 # todo check for canvas name il existing canvases
@@ -28,21 +20,28 @@ from my_handlers import COMMANDS, ADMIN_COMMNADS
 # todo canvas of given size
 # todo class for handlers?
 # todo admin set admin?
+"""
+import logging
+import telegram
+from telegram.ext import Application, CommandHandler, MessageHandler, filters
+from src.my_handlers import *
+from src.my_reply import reply
+from src.my_handlers import COMMANDS, ADMIN_COMMNADS
+from scripts.utils import read_file
 
 
-assert telegram.__version__ == "21.1.1", "This bot works only with version 21.1.1 of the python-telegram-bot library"
+assert telegram.__version__ == "21.1.1", "telegram version 21.1.1 required"
 
-
-# Enable logging
-logging.basicConfig(format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO)
-# set higher logging level for httpx to avoid all GET and POST requests being logged
-logging.getLogger("httpx").setLevel(logging.WARNING)
-
-logger = logging.getLogger(__name__)
+token_path = 'data\\TOKEN.txt'
+TOKEN = read_file(token_path)
 
 
 def main():
     """Start the bot"""
+    # Enable logging and set higher logging level for httpx
+    logging.basicConfig(format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO)
+    logging.getLogger("httpx").setLevel(logging.WARNING)
+    logger = logging.getLogger(__name__)
 
     # Create the Application and pass it your bot's token.
     application = Application.builder().token(TOKEN).build()
