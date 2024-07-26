@@ -1,1 +1,2 @@
-TOKEN = "7106772219:AAHDoVmw-ElpwZPDOLAiXgzaNdLlia6NA58"
+raise ValueError("No Token")
+TOKEN = ...
