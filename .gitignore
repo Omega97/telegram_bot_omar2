@@ -1,0 +1,7 @@
+# Pycharm IDE
+__pycache__\
+.idea\
+*.iml
+
+# venv
+venv\
