@@ -1,10 +1,11 @@
 # Pycharm IDE
-__pycache__\
-.idea\
+__pycache__/
+.idea/
 *.iml
+**/__pycache__/
 
 # venv
-venv\
+venv/
 
 # Sensitive info
 TOKEN.txt
