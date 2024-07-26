@@ -113,3 +113,14 @@ def write_user_csv_file(file_name, user_info):
         s += f'{key},{value}\n'
     with open(file_name, 'w', encoding='utf-8') as f:
         f.write(s)
+
+
+def moderate(text, word_path='data/bad_words.txt'):
+    """Return the text without bad words"""
+    with open(word_path, 'r') as f:
+        bad_words = f.read().splitlines()
+    for bad_word in bad_words:
+        if len(bad_word) < 5:
+            continue
+        text = text.replace(bad_word, '*' * len(bad_word))
+    return text
