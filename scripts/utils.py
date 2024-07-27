@@ -42,6 +42,7 @@ def get_user_id(update):
 
 
 def show_interaction(update: Update, reply_text: str):
+    """print message to the console"""
     username = get_user_full_name(update.effective_user)
     user_message = get_message_text(update)
     t_string = strftime("%H:%M:%S", gmtime(time()))

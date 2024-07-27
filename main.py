@@ -22,7 +22,6 @@ bot.
 # todo admin set admin?
 """
 import logging
-import telegram
 from telegram.ext import Application, CommandHandler, MessageHandler, filters
 from src.my_handlers import *
 from src.my_reply import reply
@@ -30,19 +29,19 @@ from src.my_handlers import COMMANDS, ADMIN_COMMNADS
 from scripts.utils import read_file
 
 
-assert telegram.__version__ == "21.1.1", "telegram version 21.1.1 required"
-
+# Read the token from the file
 token_path = 'data\\TOKEN.txt'
 TOKEN = read_file(token_path)
 
 
+# Enable logging and set higher logging level for httpx
+logging.basicConfig(format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO)
+logging.getLogger("httpx").setLevel(logging.WARNING)
+logger = logging.getLogger(__name__)
+
+
 def main():
     """Start the bot"""
-    # Enable logging and set higher logging level for httpx
-    logging.basicConfig(format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO)
-    logging.getLogger("httpx").setLevel(logging.WARNING)
-    logger = logging.getLogger(__name__)
-
     # Create the Application and pass it your bot's token.
     application = Application.builder().token(TOKEN).build()
 
@@ -52,7 +51,7 @@ def main():
     for command in ADMIN_COMMNADS:
         application.add_handler(CommandHandler(command, ADMIN_COMMNADS[command]))
 
-    # on non command i.e. message - reply to the message on Telegram
+    # on non command i.e. text message - reply to the message on Telegram
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, reply))
 
     # Run the bot until the user presses Ctrl-C

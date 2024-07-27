@@ -34,14 +34,6 @@ def reply_bot(user, text: str, user_id, n_lest_messages=100, n_write=3) -> str:
 
 async def reply(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """reply to the user message"""
-
-    # for key in dir(update):
-    #     a = getattr(update, key)
-    #     if a is None:
-    #         continue
-    #     text = str(a)
-    #     print(f'\n\033[94m{key}\033[0m {text}')
-
     user = update.effective_user
     text = get_message_text(update)
     user_id = user.id
