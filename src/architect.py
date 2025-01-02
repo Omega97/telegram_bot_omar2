@@ -16,9 +16,10 @@ class Architect:
     def __init__(self, data_dir="DATA"):
         # directories
         self.data_dir = data_dir
+        self.private_data_dir = os.path.join(data_dir, "PRIVATE")
         self.canvases_dir = os.path.join(data_dir, "canvases")
-        self.users_dir = os.path.join(data_dir, "users")
-        self.photos_dir = os.path.join(data_dir, "photos")
+        self.users_dir = os.path.join(self.private_data_dir, "users")
+        self.photos_dir = os.path.join(self.private_data_dir, "photos")
         self.directories = (self.data_dir, self.canvases_dir, self.users_dir, self.photos_dir)
 
         # attributes
@@ -31,7 +32,7 @@ class Architect:
 
     def get_user_message_path(self):
         """Get the file where the user messages are stored"""
-        return self.data_dir + "/user_messages.txt"
+        return os.path.join(self.private_data_dir, "user_messages.txt")
 
     def get_user_ids(self) -> tuple:
         """get tuple of all user ids"""
@@ -61,17 +62,21 @@ class Architect:
         for file_name in os.listdir(self.users_dir):
             if file_name.endswith('.csv'):
                 user_id = int(file_name.split('.')[0])
-                self.user_info[user_id] = read_user_csv_file(self.users_dir + '/' + file_name)
+                path = os.path.join(self.users_dir, file_name)
+                self.user_info[user_id] = read_user_csv_file(path)
 
     def save_user_info(self):
         """Save the users to the user.pkl file"""
         for user_id in self.user_info:
-            write_user_csv_file(self.users_dir + '/' + str(user_id) + '.csv', self.user_info[user_id])
+            path = f'{self.users_dir}/{user_id}.csv'
+            write_user_csv_file(path, self.user_info[user_id])
 
-    def _build_env(self):
+    def _build_env(self, verbose=True):
         # create directories
         for path in self.directories:
             if not os.path.exists(path):
+                if verbose:
+                    print(f">>> Creating directory: {path}")
                 os.makedirs(path)
 
     def get_user_info(self) -> dict:
@@ -155,15 +160,22 @@ class Architect:
         v = [user_id for user_id in self.user_info if self.get_item(user_id, "santa", False)]
         return tuple(v)
 
-    def get_points(self, user_id):
-        """Get the number of points for a user"""
-        return self.get_item(user_id, "points", 0)
+    def get_gems(self, user_id):
+        """Get the number of gems for a user"""
+        return self.get_item(user_id, "gems", 0)
 
-    def increase_points(self, user_id, points):
-        """Increase the number of points for a user"""
-        assert points > 0, "Points must be greater than zero"
-        n = self.get_points(user_id) + points
-        self.set_item(user_id, "points", n)
+    def increase_gems(self, user_id, n_gems):
+        """Increase the number of gems for a user"""
+        assert n_gems >= 0, "Gems must be greater than zero"
+        n = self.get_gems(user_id) + n_gems
+        self.set_item(user_id, "gems", n)
+        self.save_user_info()
+
+    def decrease_gems(self, user_id, n_gems):
+        """Decrease the number of gems for a user"""
+        assert n_gems >= 0, "Gems must be greater than zero"
+        n = self.get_gems(user_id) - n_gems
+        self.set_item(user_id, "gems", n)
         self.save_user_info()
 
     def get_tile_leaderboard(self):
@@ -179,18 +191,18 @@ class Architect:
         names, emojis, tiles = zip(*v)
         return names, emojis, tiles
 
-    def get_leaderboard(self):
-        """Return the leaderboard for the number of points for all users"""
+    def get_gems_leaderboard(self):
+        """Return the leaderboard for the number of gems for all users"""
         v = []
         for user_id in self.user_info:
-            points = self.get_points(user_id)
-            if points:
+            n_gems = self.get_gems(user_id)
+            if n_gems:
                 emoji = self.get_user_emoji(user_id)
                 name = self.get_user_name(user_id)
-                v.append((name, emoji, points))
+                v.append((name, emoji, n_gems))
         v.sort(key=lambda x: x[2], reverse=True)
-        names, emojis, points = zip(*v)
-        return names, emojis, points
+        names, emojis, n_gems = zip(*v)
+        return names, emojis, n_gems
 
     def get_admins(self) -> tuple:
         """get a tuple of all the admin ids"""
