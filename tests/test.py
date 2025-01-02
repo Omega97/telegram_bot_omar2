@@ -1,10 +1,12 @@
 from src.architect import Architect
 from src.place import Place
 from scripts.utils import read_file
+import cv2
+import numpy as np
 
 
 def test_show_user_info():
-    architect = Architect()
+    architect = Architect(data_dir="..\\data")
     user_info = architect.get_user_info()
 
     # architect.set_emoji(156267213, '🟦')  # Omar Cusma Fait '🇸🇮'
@@ -60,8 +62,23 @@ def test_characters(file_path='..\\data\\default_emoji.txt'):
         print(c, ord(c))
 
 
+def test_photo():
+    architect = Architect(data_dir="..\\data")
+    names = architect.get_photo_names()
+    print(names)
+    img = architect.get_photo(names[0])
+    # cv2.imshow(names[0], img)
+    # cv2.waitKey(0)
+    # cv2.destroyAllWindows()
+    v = np.mean(np.mean(img, axis=0), axis=0)
+    v = np.round(v)
+    print(v)
+
+
+
 if __name__ == '__main__':
     # test_show_user_info()
     # test_architect()
     # test_mini_canvas()
-    test_characters()
+    # test_characters()
+    test_photo()
