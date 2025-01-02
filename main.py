@@ -13,7 +13,7 @@ Basic bot example, repeats messages.
 Press Ctrl-C on the command line or send a signal to the process to stop the
 bot.
 
-Commands can be found in the my_handlers.py file.
+Commands can be found in the commands.py file.
 
 # todo check string conversion to int
 # todo check for canvas name in existing canvases
@@ -24,9 +24,9 @@ Commands can be found in the my_handlers.py file.
 """
 import logging
 from telegram.ext import Application, CommandHandler, MessageHandler, filters
-from src.my_handlers import *
+from telegram import Update
 from src.my_reply import reply
-from src.my_handlers import COMMANDS, ADMIN_COMMNADS
+from src.commands import COMMANDS, ADMIN_COMMNADS
 from scripts.utils import read_file
 
 
@@ -46,7 +46,7 @@ def main():
     # Create the Application and pass it your bot's token.
     application = Application.builder().token(TOKEN).build()
 
-    # on different commands - answer in Telegram
+    # on different commands.py - answer in Telegram
     for command in COMMANDS:
         application.add_handler(CommandHandler(command, COMMANDS[command]))
     for command in ADMIN_COMMNADS:
