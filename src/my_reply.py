@@ -15,6 +15,11 @@ async def reply(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """reply to the user message"""
     user = update.effective_user
     text = get_message_text(update)
+
+    if text is None:
+        # if the user edits an old message, it registers as a None message
+        return
+    
     user_id = user.id
     text = reply_bot(user, text, user_id)
     show_interaction(update, text)
