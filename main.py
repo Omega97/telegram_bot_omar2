@@ -13,9 +13,10 @@ Basic bot example, repeats messages.
 Press Ctrl-C on the command line or send a signal to the process to stop the
 bot.
 
+Commands can be found in the my_handlers.py file.
+
 # todo check string conversion to int
-# todo check for canvas name il existing canvases
-# todo save ALL messages
+# todo check for canvas name in existing canvases
 # todo blocked users
 # todo canvas of given size
 # todo class for handlers?
@@ -30,8 +31,8 @@ from scripts.utils import read_file
 
 
 # Read the token from the file
-token_path = 'data\\TOKEN.txt'
-TOKEN = read_file(token_path)
+TOKEN_PATH = 'TOKEN.txt'
+TOKEN = read_file(TOKEN_PATH).strip()
 
 
 # Enable logging and set higher logging level for httpx

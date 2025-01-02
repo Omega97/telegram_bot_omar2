@@ -2,23 +2,24 @@
 This is the Architect class. It is used to manage the users.
 """
 import os
+import hashlib
+from time import gmtime, strftime
 import numpy as np
 from scripts.utils import DEFAULT_EMOJI, read_user_csv_file, write_user_csv_file
+import cv2
+from typing import List
 
 
 class Architect:
     """Class to manage the users"""
 
-    def __init__(self, data_dir="data"):
+    def __init__(self, data_dir="DATA"):
         # directories
         self.data_dir = data_dir
-        self.canvases_dir = data_dir + "/canvases"
-        self.users_dir = data_dir + "/users"
-        self.directories = (self.data_dir, self.canvases_dir, self.users_dir)
-
-        # file paths
-        # self.user_file = self.data_dir + "/user.pkl"
-        self.user_message_path = self.data_dir + "/user_messages.txt"
+        self.canvases_dir = os.path.join(data_dir, "canvases")
+        self.users_dir = os.path.join(data_dir, "users")
+        self.photos_dir = os.path.join(data_dir, "photos")
+        self.directories = (self.data_dir, self.canvases_dir, self.users_dir, self.photos_dir)
 
         # attributes
         self.user_info = dict()
@@ -27,6 +28,10 @@ class Architect:
         # build environment
         self._build_env()
         self._load_user_info()
+
+    def get_user_message_path(self):
+        """Get the file where the user messages are stored"""
+        return self.data_dir + "/user_messages.txt"
 
     def get_user_ids(self) -> tuple:
         """get tuple of all user ids"""
@@ -193,19 +198,21 @@ class Architect:
 
     def get_user_messages(self) -> list:
         """Get the last user message"""
-        if os.path.exists(self.user_message_path):
-            with open(self.user_message_path, "r") as f:
+        path = self.get_user_message_path()
+        if os.path.exists(path):
+            with open(path, "r") as f:
                 return f.read().splitlines()
         else:
             return []
 
     def save_user_message(self, message, encoding="utf-8"):
         """Set the last user message"""
-        if os.path.exists(self.user_message_path):
-            with open(self.user_message_path, "a", encoding=encoding) as f:
+        path = self.get_user_message_path()
+        if os.path.exists(path):
+            with open(path, "a", encoding=encoding) as f:
                 f.write(message + "\n")
         else:
-            with open(self.user_message_path, "w", encoding=encoding) as f:
+            with open(path, "w", encoding=encoding) as f:
                 f.write(message + "\n")
 
     def get_canvas_name(self, user_id):
@@ -241,3 +248,52 @@ class Architect:
         file_names = os.listdir(self.canvases_dir)
         file_names = [canvas_name for canvas_name in file_names if canvas_name.endswith('.csv')]
         return file_names
+
+    def get_photo_names(self):
+        """Return the names of all the photo files"""
+
+        if not os.path.exists(self.photos_dir):
+            return []
+        else:
+            return os.listdir(self.photos_dir)
+
+    def get_photo(self, photo_name):
+        """Return the png/jpg/jpeg photo file"""
+        path = os.path.join(self.photos_dir, photo_name)
+        return cv2.imread(path)
+
+    def _get_active_santa_file_name(self):
+        """Get the filename for the list of santas that have already checked the receiver this year"""
+        year = strftime("%Y", gmtime())
+        santas = self.get_santas()
+        string = f'{year} {santas}'
+        sha256_hash = hashlib.sha256(string.encode('utf-8')).hexdigest()
+        return f'data/active_santas/{sha256_hash[:16]}.txt'
+
+    def get_active_santas_ids(self) -> List[int]:
+        """Get the list of the ids of santas that
+        have already checked the receiver this year."""
+
+        # check if the file in the filename exists
+        filename = self._get_active_santa_file_name()
+        if not os.path.exists(filename):
+            # create an empty file, and all the necessary directories
+            os.makedirs(os.path.dirname(filename), exist_ok=True)
+            with open(filename, 'w') as f:
+                f.write('')
+
+        # read the file
+        with open(filename, 'r') as f:
+            text = f.read()
+            active_santas = text.splitlines()
+            active_santas = [int(santa) for santa in active_santas if santa]
+
+        return active_santas
+
+    def add_active_santa(self, santa):
+        """Add a santa to the list of santas that have already checked the receiver this year"""
+        filename = self._get_active_santa_file_name()
+        active_santas = self.get_active_santas_ids()
+        if santa not in active_santas:
+            with open(filename, 'a') as f:
+                f.write(f'{santa}\n')

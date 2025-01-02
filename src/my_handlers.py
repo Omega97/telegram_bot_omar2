@@ -6,6 +6,7 @@ from telegram import ForceReply, Update
 from telegram.ext import ContextTypes
 from time import time, gmtime, strftime
 import numpy as np
+
 from src.architect import Architect
 from src.place import Place
 from scripts.pasgen_2024 import generate_password
@@ -63,6 +64,10 @@ async def babbo_natale_segreto_command(update: Update, _):
         text += '\n'
         year = strftime("%Y", gmtime())
         text += f'Il tuo Babbo Natale segreto {year} è:\n➡{babbo_natale(user_names)[this_user]}⬅ !'
+
+        # add user to the list of active santas
+        architect.add_active_santa(this_user_id)
+
         show_interaction(update, text)
         await update.message.reply_text(text)
     else:
@@ -130,7 +135,7 @@ async def place_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 place.swap_pixel(x, y, user_id=user_id)
                 architect.set_last_place_time(user_id, now)
                 architect.add_place_tiles_count(user_id)
-                architect.increase_points(user_id, PLACING_TILE_POINTS)
+                architect.increase_points(user_id, 1)  # placing tile point default value
                 text += str(place)
             except Exception as e:
                 text = (f"{x} {y} {user_id}\n"
@@ -313,7 +318,29 @@ async def admin_set_santa_command(update: Update, context: ContextTypes.DEFAULT_
             architect.set_santa(user_id, santa)
             text = f'🎅 Santa set to "{santa}" for user {user_id}'
     else:
-        text = "Usage: /set_santa [user_id] [santa]"
+        text = "Usage: /set_santa [user_id] [True/False]"
+    show_interaction(update, text)
+    await update.message.reply_text(text)
+
+
+@check_admin_wrapper
+async def admin_check_santa_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Check which users already used the santa command this year."""
+    architect = Architect()
+    _ = context.args
+
+    santas = architect.get_santas()
+    active_santas = architect.get_active_santas_ids()
+
+    if len(santas) == 0:
+        text = "No santas set!"
+    else:
+        if len(active_santas) == len(santas):
+            text = "All santas used the command this year!"
+        else:
+            n = len(santas) - len(active_santas)
+            text = f"{n} santas didn't use the command yet!"
+
     show_interaction(update, text)
     await update.message.reply_text(text)
 
@@ -322,14 +349,12 @@ async def admin_set_santa_command(update: Update, context: ContextTypes.DEFAULT_
 async def admin_password_command(update: Update, context: ContextTypes.DEFAULT_TYPE, default_length=16):
     """Generate a password"""
     args = context.args
-    key = ""
-    length = default_length
     text = None
 
     try:
         key = args[0] if len(args) > 0 else ""
         length = int(args[1]) if len(args) > 1 else default_length
-    except Exception:
+    except ValueError:
         text = f"Usage: /password [key] [length]"
     else:
         if text is None:
@@ -337,27 +362,35 @@ async def admin_password_command(update: Update, context: ContextTypes.DEFAULT_T
                 username = get_user_full_name(update.effective_user)
                 password = generate_password(key, username, length)
                 text = f"{password}"
-            except Exception as _:
+            except ValueError as _:
                 text = f"Usage: /password [key] [length]"
 
     show_interaction(update, text)
     await update.message.reply_text(text)
 
 
-# command handlers (without slash, need to be here)
-COMMANDS["start"] = start_command
-COMMANDS["help"] = help_command
-COMMANDS["users"] = get_users_command
-COMMANDS["random_user"] = random_user_command
-COMMANDS["place"] = place_command
-COMMANDS["babbo_natale_segreto"] = babbo_natale_segreto_command
-COMMANDS["leaderboard"] = leaderboard_command
+def main():
+    """List of commands (without slash)"""
 
-# admin commands
-ADMIN_COMMNADS["get_ids"] = admin_get_user_ids_command
-ADMIN_COMMNADS["set_emoji"] = admin_set_emoji_command
-ADMIN_COMMNADS["canvas_names"] = admin_canvas_names_command
-ADMIN_COMMNADS["set_canvas"] = admin_set_canvas_command
-ADMIN_COMMNADS["get_info"] = admin_get_info_command
-ADMIN_COMMNADS["set_santa"] = admin_set_santa_command
-ADMIN_COMMNADS["password"] = admin_password_command
+    # command handlers
+    COMMANDS["start"] = start_command
+    COMMANDS["help"] = help_command
+    COMMANDS["users"] = get_users_command
+    COMMANDS["random_user"] = random_user_command
+    COMMANDS["place"] = place_command
+    COMMANDS["babbo_natale_segreto"] = babbo_natale_segreto_command
+    COMMANDS["leaderboard"] = leaderboard_command
+
+    # admin command handlers
+    ADMIN_COMMNADS["get_ids"] = admin_get_user_ids_command
+    ADMIN_COMMNADS["set_emoji"] = admin_set_emoji_command
+    ADMIN_COMMNADS["canvas_names"] = admin_canvas_names_command
+    ADMIN_COMMNADS["set_canvas"] = admin_set_canvas_command
+    ADMIN_COMMNADS["get_info"] = admin_get_info_command
+    ADMIN_COMMNADS["set_santa"] = admin_set_santa_command
+    ADMIN_COMMNADS["check_santa"] = admin_check_santa_command
+    ADMIN_COMMNADS["password"] = admin_password_command
+
+
+if __name__ == "src.my_handlers":
+    main()
