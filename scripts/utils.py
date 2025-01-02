@@ -15,7 +15,7 @@ DEFAULT_EMOJI = ["⬜️", "🟥", "🟧", "🟨", "🟩", "🟪",
 
 
 def read_file(file_name, encoding='utf-8'):
-    """Read the token from the file"""
+    """Read the token from the file."""
     if not os.path.exists(file_name):
         raise FileNotFoundError(f"Please create the {file_name} file")
     with open(file_name, "r", encoding=encoding) as f:
@@ -24,12 +24,12 @@ def read_file(file_name, encoding='utf-8'):
 
 
 def get_user_full_name(user):
-    """Return the full name of the user who sent the message"""
+    """Return the full name of the user who sent the message."""
     return f"{user.first_name} {user.last_name}" if user.last_name else user.first_name
 
 
 def get_message_text(update):
-    """Return the text of the message"""
+    """Return the text of the message."""
     out = 'None'
     if hasattr(update.message, 'text'):
         out = str(update.message.text)
@@ -37,12 +37,12 @@ def get_message_text(update):
 
 
 def get_user_id(update):
-    """Return the id of the user who sent the message"""
+    """Return the id of the user who sent the message."""
     return update.effective_user.id
 
 
 def show_interaction(update: Update, reply_text: str):
-    """print message to the console"""
+    """Print message on the console."""
     username = get_user_full_name(update.effective_user)
     user_message = get_message_text(update)
     t_string = strftime("%H:%M:%S", gmtime(time()))
@@ -51,14 +51,14 @@ def show_interaction(update: Update, reply_text: str):
 
 
 def pick_random_gift_receivers(n, seed):
-    """Pick random gift receivers for the Babbo Natale Segreto game"""
+    """Pick random gift receivers for the 'Babbo Natale Segreto' game."""
     np.random.seed(seed)
     v = list(np.random.permutation(n))
     return [v[v.index(i) - 1] for i in range(n)]
 
 
 def babbo_natale(names: list) -> dict:
-    """Return the secret Santa for each user in the list of names"""
+    """Return the secret Santa for each user in the list of names."""
     names = np.array(names)
     year = strftime("%Y", gmtime())
     indices = pick_random_gift_receivers(len(names), int(year))
@@ -66,8 +66,8 @@ def babbo_natale(names: list) -> dict:
     return receivers
 
 
-def generic_convert_string(s: str):
-    """ try to convert the value to int, float, or bool  todo check! """
+def generic_convert_string(s: str):  # todo check!
+    """ try to convert the value to int, float, or bool. """
 
     # string
     if s.startswith('"') and s.endswith('"'):
@@ -105,7 +105,7 @@ def generic_convert_string(s: str):
 
 
 def read_user_csv_file(file_name):
-    """Convert the csv user file to a dictionary"""
+    """Convert the csv user file to a dictionary."""
     out = dict()
     with open(file_name, "r", encoding="utf-8") as f:
         for line in f:
@@ -117,7 +117,7 @@ def read_user_csv_file(file_name):
 
 
 def write_user_csv_file(file_name, user_info):
-    """Write the user dictionary to a csv file"""
+    """Write the user dictionary to a csv file."""
     s = ''
     for key in user_info:
         value = user_info[key]
@@ -127,7 +127,7 @@ def write_user_csv_file(file_name, user_info):
 
 
 def moderate(text, word_path='data/bad_words.txt'):
-    """Return the text without bad words"""
+    """Return the text without bad words."""
     with open(word_path, 'r') as f:
         bad_words = f.read().splitlines()
     for bad_word in bad_words:
