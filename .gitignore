@@ -10,4 +10,4 @@ venv/
 
 # Sensitive info
 TOKEN.txt
-data/
+DATA/PRIVATE/
