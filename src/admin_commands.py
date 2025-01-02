@@ -27,6 +27,18 @@ def check_admin_wrapper(func):
     return wrapper
 
 
+def command_wrapper(func):
+
+    async def wrapper(update: Update, context: ContextTypes.DEFAULT_TYPE):
+
+        # if message is an edit then skip reply
+        if hasattr(update.message, 'reply_text'):
+            await func(update, context)
+
+    return wrapper
+
+
+@command_wrapper
 @check_admin_wrapper
 async def admin_get_user_ids_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Get list of ids and usernames """
@@ -46,6 +58,7 @@ async def admin_get_user_ids_command(update: Update, context: ContextTypes.DEFAU
     await update.message.reply_text(text)
 
 
+@command_wrapper
 @check_admin_wrapper
 async def admin_set_emoji_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Set user's emoji"""
@@ -65,6 +78,7 @@ async def admin_set_emoji_command(update: Update, context: ContextTypes.DEFAULT_
     await update.message.reply_text(text)
 
 
+@command_wrapper
 @check_admin_wrapper
 async def admin_canvas_names_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Get list of canvas names"""
@@ -78,6 +92,7 @@ async def admin_canvas_names_command(update: Update, context: ContextTypes.DEFAU
     await update.message.reply_text(text)
 
 
+@command_wrapper
 @check_admin_wrapper
 async def admin_set_canvas_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Set user's canvas"""
@@ -101,6 +116,7 @@ async def admin_set_canvas_command(update: Update, context: ContextTypes.DEFAULT
     await update.message.reply_text(text)
 
 
+@command_wrapper
 @check_admin_wrapper
 async def admin_get_info_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Get user's info"""
@@ -122,6 +138,7 @@ async def admin_get_info_command(update: Update, context: ContextTypes.DEFAULT_T
     await update.message.reply_text(text)
 
 
+@command_wrapper
 @check_admin_wrapper
 async def admin_set_santa_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Set user's santa"""
@@ -141,6 +158,7 @@ async def admin_set_santa_command(update: Update, context: ContextTypes.DEFAULT_
     await update.message.reply_text(text)
 
 
+@command_wrapper
 @check_admin_wrapper
 async def admin_check_santa_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Check which users already used the santa command this year."""
@@ -163,6 +181,7 @@ async def admin_check_santa_command(update: Update, context: ContextTypes.DEFAUL
     await update.message.reply_text(text)
 
 
+@command_wrapper
 @check_admin_wrapper
 async def admin_password_command(update: Update, context: ContextTypes.DEFAULT_TYPE, default_length=16):
     """Generate a password"""
@@ -188,6 +207,7 @@ async def admin_password_command(update: Update, context: ContextTypes.DEFAULT_T
     await update.message.reply_text(text)
 
 
+@command_wrapper
 @check_admin_wrapper
 async def admin_give_gems_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Give gems to a user"""
@@ -220,6 +240,7 @@ async def admin_give_gems_command(update: Update, context: ContextTypes.DEFAULT_
     await update.message.reply_text(text)
 
 
+@command_wrapper
 @check_admin_wrapper
 async def admin_list_gems_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """List all users with their gems, sorted by amount"""

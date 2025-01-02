@@ -14,13 +14,13 @@ def reply_bot(user, text: str, user_id) -> str:
 async def reply(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """reply to the user message"""
     user = update.effective_user
-    text = get_message_text(update)
+    message_text = get_message_text(update)
 
-    if text is None:
+    if not hasattr(update.message, 'reply_text'):
         # if the user edits an old message, it registers as a None message
-        return
-    
-    user_id = user.id
-    text = reply_bot(user, text, user_id)
-    show_interaction(update, text)
-    await update.message.reply_text(text)
+        pass
+    else:
+        user_id = user.id
+        reply_text = reply_bot(user, message_text, user_id)
+        show_interaction(update, reply_text)
+        await update.message.reply_text(reply_text)

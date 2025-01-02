@@ -10,7 +10,7 @@ from src.architect import Architect
 from src.place import Place
 from scripts.utils import show_interaction
 from scripts.utils import get_user_full_name, babbo_natale, get_user_id
-from src.admin_commands import ADMIN_COMMNADS
+from src.admin_commands import ADMIN_COMMNADS, command_wrapper
 
 
 COMMANDS = dict()
@@ -27,6 +27,7 @@ CONSOLATION_PHRASES = ["Better luck next time!",
                        "Try again"]
 
 
+@command_wrapper
 async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Send a message when the command /start is issued."""
     _ = context.args
@@ -43,6 +44,7 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_html(text, reply_markup=ForceReply(selective=True))
 
 
+@command_wrapper
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Send a message when the command /help is issued."""
     _ = context.args
@@ -59,6 +61,7 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(text)
 
 
+@command_wrapper
 async def babbo_natale_segreto_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Send a message when the command /babbo_natale_segreto is issued."""
     architect = Architect()
@@ -88,6 +91,7 @@ async def babbo_natale_segreto_command(update: Update, context: ContextTypes.DEF
         await update.message.reply_text(text)
 
 
+@command_wrapper
 async def get_users_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Send a message when the command /users is issued."""
     architect = Architect()
@@ -99,6 +103,7 @@ async def get_users_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(text)
 
 
+@command_wrapper
 async def show_user_gems_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Send a message when the command /gems is issued."""
     architect = Architect()
@@ -110,6 +115,7 @@ async def show_user_gems_command(update: Update, context: ContextTypes.DEFAULT_T
     await update.message.reply_text(text)
 
 
+@command_wrapper
 async def random_user_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Send a message when the command /random_user is issued."""
     architect = Architect()
@@ -123,6 +129,7 @@ async def random_user_command(update: Update, context: ContextTypes.DEFAULT_TYPE
     await update.message.reply_text(text)
 
 
+@command_wrapper
 async def place_command(update: Update, context: ContextTypes.DEFAULT_TYPE, n_gems=1):
     """Send a message when the command /place is issued."""
     architect = Architect()
@@ -203,6 +210,7 @@ async def place_command(update: Update, context: ContextTypes.DEFAULT_TYPE, n_ge
         await update.message.reply_text(text)
 
 
+@command_wrapper
 async def leaderboard_command(update: Update, context: ContextTypes.DEFAULT_TYPE, length=5):
     """Send a message when the command /leaderboard is issued."""
     architect = Architect()
@@ -215,6 +223,7 @@ async def leaderboard_command(update: Update, context: ContextTypes.DEFAULT_TYPE
     await update.message.reply_text(text)
 
 
+@command_wrapper
 async def play_coin_game(update: Update, context: ContextTypes.DEFAULT_TYPE, n_coins=5, limit=100):
     """Toss n_coins straight heads to win gems."""
     args = context.args
