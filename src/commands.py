@@ -224,17 +224,21 @@ async def leaderboard_command(update: Update, context: ContextTypes.DEFAULT_TYPE
 
 
 @command_wrapper
-async def play_coin_game(update: Update, context: ContextTypes.DEFAULT_TYPE, n_coins=5, limit=100):
+async def play_coin_game(update: Update, context: ContextTypes.DEFAULT_TYPE, n_coins=5, multiplier=15, limit=100):
     """Toss n_coins straight heads to win gems."""
     args = context.args
     architect = Architect()
     user_id = get_user_id(update)
-
-    multiplier = round(2 ** n_coins, -1)
     chars = ["🟡", "🔵"]
 
+    p_win = 1 / 2 ** (n_coins - 1)
+    p_lose = 1 - p_win
+    expected_value = p_win * multiplier - p_lose
+    assert expected_value <= 0, f'Expected value: {expected_value}'
+
     if len(args) == 0:
-        text = f'🔹 Toss {n_coins} heads {chars[0]} to win {multiplier} times the gems! 🔹\n'
+        text = (f'{chars[1]} Toss {n_coins} times the same result {chars[0]}\n'
+                f'to win {multiplier} times the gems! 🔹\n')
         text += 'Usage: /gamble [n_gems]'
     else:
 
@@ -249,37 +253,42 @@ async def play_coin_game(update: Update, context: ContextTypes.DEFAULT_TYPE, n_c
             return await update.message.reply_text(text)
 
         player_gems = architect.get_gems(get_user_id(update))
+
+        # check if the player has enough gems
         if bet > player_gems:
             text = f'You have only {player_gems} gems 🔹\n'
             show_interaction(update, text)
             return await update.message.reply_text(text)
 
+        # check if the bet is within the limit
         if bet > limit:
             text = f'You can bet up to {limit} gems 🔹\n'
             show_interaction(update, text)
             return await update.message.reply_text(text)
 
+        # check if the bet is positive
         if bet <= 0:
             text = 'You must bet at least 1 gem 🔹\n'
             show_interaction(update, text)
             return await update.message.reply_text(text)
 
-        # if bet went through
+        # if bet went through:
         price = bet * multiplier
-        text = f'💰 You bet {bet} gems 🔹\n'
+        s = '' if bet == 1 else 's'
+        text = f'💰 You bet {bet} gem{s} 🔹\n\n'
         architect.decrease_gems(user_id, bet)
 
-        # toss coins
+        # toss the coins
         coins = np.random.choice([0, 1], n_coins)
-        text += f'Coins: {" ".join([chars[i] for i in coins])}\n'
-        text += '\n'
-        if sum(coins) == 0:
+        text += f'Coins: {" ".join([chars[i] for i in coins])}\n\n'
+
+        if sum(coins) == 0 or sum(coins) == n_coins:
             # reward the player
-            text += f'🎉 Congrats! You won {price} gems 🔹 🎉'
+            text += f'🎉 Congrats! You won {price} gems 🔹 🎉\n'
             text += f'💰 You now have {player_gems + price} gems 💰'
             architect.increase_gems(user_id, price)
         else:
-            if sum(coins) == 1:
+            if sum(coins) == 1 or sum(coins) == n_coins - 1:
                 phrase = "Almost there!"
             elif sum(coins) == 0:
                 phrase = "Impressive! All tails..."
@@ -294,16 +303,24 @@ async def play_coin_game(update: Update, context: ContextTypes.DEFAULT_TYPE, n_c
 def main():
     """List of commands (without slash)"""
 
-    # command handlers
+    # users
     COMMANDS["start"] = start_command
     COMMANDS["help"] = help_command
     COMMANDS["users"] = get_users_command
+
+    # gems
     COMMANDS["gems"] = show_user_gems_command
-    COMMANDS["random_user"] = random_user_command
-    COMMANDS["place"] = place_command
-    COMMANDS["babbo_natale_segreto"] = babbo_natale_segreto_command
-    COMMANDS["leaderboard"] = leaderboard_command
     COMMANDS["gamble"] = play_coin_game
+
+    # canvas
+    COMMANDS["place"] = place_command
+    COMMANDS["leaderboard"] = leaderboard_command
+
+    # santa
+    COMMANDS["babbo_natale_segreto"] = babbo_natale_segreto_command
+
+    # misc
+    COMMANDS["random_user"] = random_user_command
 
 
 if __name__ == "src.commands":
