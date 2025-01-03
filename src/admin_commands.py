@@ -260,19 +260,49 @@ async def admin_list_gems_command(update: Update, context: ContextTypes.DEFAULT_
     await update.message.reply_text(text)
 
 
+@command_wrapper
+@check_admin_wrapper
+async def admin_get_user_info_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Show all the user info"""
+    architect = Architect()
+    args = context.args
+    if len(args) == 1:
+        user_id = int(args[0])
+        if user_id not in architect.get_user_ids():
+            text = f"User {user_id} not found"
+        else:
+            user_info = architect.get_user_info()[user_id]
+            text = f"ℹ️ Info for user {user_id} ℹ️\n"
+            for key, value in user_info.items():
+                text += f"{key}: {value}\n"
+    else:
+        text = "Usage: /get_user_info [user_id]"
+    show_interaction(update, text)
+    await update.message.reply_text(text)
+
+
 def main():
     """List of commands (without slash)"""
 
-    # admin command handlers
+    # users
     ADMIN_COMMNADS["get_ids"] = admin_get_user_ids_command
+    ADMIN_COMMNADS["get_info"] = admin_get_info_command
+    ADMIN_COMMNADS["get_user_info"] = admin_get_user_info_command
     ADMIN_COMMNADS["set_emoji"] = admin_set_emoji_command
+
+    # santa
+    ADMIN_COMMNADS["check_santa"] = admin_check_santa_command
+    ADMIN_COMMNADS["set_santa"] = admin_set_santa_command
+
+    # gems
     ADMIN_COMMNADS["give_gems"] = admin_give_gems_command
     ADMIN_COMMNADS["list_gems"] = admin_list_gems_command
+
+    # canvas
     ADMIN_COMMNADS["canvas_names"] = admin_canvas_names_command
     ADMIN_COMMNADS["set_canvas"] = admin_set_canvas_command
-    ADMIN_COMMNADS["get_info"] = admin_get_info_command
-    ADMIN_COMMNADS["set_santa"] = admin_set_santa_command
-    ADMIN_COMMNADS["check_santa"] = admin_check_santa_command
+
+    # misc
     ADMIN_COMMNADS["password"] = admin_password_command
 
 
